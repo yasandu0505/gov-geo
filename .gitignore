@@ -1,0 +1,18 @@
+# Ignore environment files
+.env
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore Go build output
+/bin/
+/obj/
+
+# Ignore vendor directory if using Go modules
+/vendor/
+
+# Ignore IDE/editor config files
+.vscode/
+.idea/
+*.iml
