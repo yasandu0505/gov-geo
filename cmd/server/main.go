@@ -1,36 +1,42 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
 	"log"
-	"net/http"
+	"os"
 
-	"go-mysql-backend/config"
-	"go-mysql-backend/internal/db"
-	"go-mysql-backend/internal/handler"
-	"go-mysql-backend/internal/repository"
-	"go-mysql-backend/internal/service"
-	"go-mysql-backend/routes"
-
-	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 func main() {
-	// Load config (optional if you're using a config package)
-	config.Load()
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-	// Initialize DB
-	db.Init()
+	// Get database URI from env
+	dbURI := os.Getenv("DATABASE_URL")
+	if dbURI == "" {
+		log.Fatal("DATABASE_URL not found in .env file")
+	}
 
-	// Setup repository, service, and handler layers
-	userRepo := repository.NewUserRepository(db.DB)
-	userService := service.NewUserService(userRepo)
-	userHandler := handler.NewUserHandler(userService)
+	// Connect to PostgreSQL
+	db, err := sql.Open("postgres", dbURI)
+	if err != nil {
+		log.Fatal("Failed to connect to database:", err)
+	}
 
-	// Setup router and routes
-	r := mux.NewRouter()
-	routes.RegisterUserRoutes(r, userHandler)
+	// Ping the database to verify connection
+	err = db.Ping()
+	if err != nil {
+		log.Fatal("Database unreachable:", err)
+	}
 
-	// Start server
-	log.Println("Server running on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	fmt.Println("✅ Successfully connected to PostgreSQL!")
+	defer db.Close()
+
+	// You can now use `db` to perform queries
 }
