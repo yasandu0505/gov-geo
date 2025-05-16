@@ -1,16 +1,36 @@
 package main
 
 import (
-	"go-mysql-backend/internal/db"
-	"go-mysql-backend/routes"
 	"log"
 	"net/http"
+
+	"go-mysql-backend/config"
+	"go-mysql-backend/internal/db"
+	"go-mysql-backend/internal/handler"
+	"go-mysql-backend/internal/repository"
+	"go-mysql-backend/internal/service"
+	"go-mysql-backend/routes"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	db.InitMySQL()
-	router := routes.SetupRouter()
+	// Load config (optional if you're using a config package)
+	config.Load()
 
-	log.Println("Server running at :8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	// Initialize DB
+	db.Init()
+
+	// Setup repository, service, and handler layers
+	userRepo := repository.NewUserRepository(db.DB)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
+
+	// Setup router and routes
+	r := mux.NewRouter()
+	routes.RegisterUserRoutes(r, userHandler)
+
+	// Start server
+	log.Println("Server running on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
