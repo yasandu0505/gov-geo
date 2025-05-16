@@ -4,26 +4,34 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
-	"go-mysql-backend/config"
-
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
-var DB *sql.DB
-
-func Init() {
-	cfg := config.AppConfig
-
-	var err error
-	DB, err = sql.Open("postgres", cfg.DatabaseURL)
+func InitPostgres() *sql.DB {
+	// Load .env (optional if already loaded in main)
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("❌ Failed to connect to database:", err)
+		log.Println("⚠️ No .env file found. Using system environment variables.")
 	}
 
-	if err = DB.Ping(); err != nil {
-		log.Fatal("❌ Database unreachable:", err)
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("❌ DATABASE_URL not set in environment variables")
 	}
 
-	fmt.Println("✅ PostgreSQL connected successfully!")
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		log.Fatalf("❌ Failed to open DB connection: %v", err)
+	}
+
+	// Verify DB connection
+	if err := db.Ping(); err != nil {
+		log.Fatalf("❌ Cannot connect to DB: %v", err)
+	}
+
+	fmt.Println("✅ Connected to PostgreSQL")
+	return db
 }

@@ -4,39 +4,42 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
+	"net/http"
 
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq" // PostgreSQL driver
+	"go-mysql-backend/config"
+	"go-mysql-backend/internal/handlers"
+	"go-mysql-backend/internal/repository"
+	"go-mysql-backend/internal/service"
+	"go-mysql-backend/routes"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
-	// Load .env file
-	err := godotenv.Load()
+	cfg := config.LoadConfig()
+	if cfg.DatabaseURL == "" {
+		log.Fatal("DATABASE_URL not provided")
+	}
+
+	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal(err)
 	}
+	defer db.Close()
 
-	// Get database URI from env
-	dbURI := os.Getenv("DATABASE_URL")
-	if dbURI == "" {
-		log.Fatal("DATABASE_URL not found in .env file")
-	}
-
-	// Connect to PostgreSQL
-	db, err := sql.Open("postgres", dbURI)
-	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
-	}
-
-	// Ping the database to verify connection
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Database unreachable:", err)
+		log.Fatal(err)
 	}
 
 	fmt.Println("✅ Successfully connected to PostgreSQL!")
-	defer db.Close()
 
-	// You can now use `db` to perform queries
+	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo)
+	userHandler := handlers.NewUserHandler(userService)
+
+	routes.SetupRoutes(userHandler)
+
+	fmt.Println("Server running at http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

@@ -1,11 +1,10 @@
 package routes
 
 import (
-	"go-mysql-backend/internal/handler"
-
-	"github.com/gorilla/mux"
+	"go-mysql-backend/internal/handlers"
+	"net/http"
 )
 
-func RegisterUserRoutes(r *mux.Router, h *handler.UserHandler) {
-	r.HandleFunc("/users", h.GetUsers).Methods("GET")
+func SetupRoutes(userHandler *handlers.UserHandler) {
+	http.HandleFunc("/users", userHandler.GetUsers)
 }

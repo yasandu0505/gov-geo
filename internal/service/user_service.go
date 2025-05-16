@@ -5,18 +5,14 @@ import (
 	"go-mysql-backend/internal/repository"
 )
 
-type UserService interface {
-	GetAllUsers() ([]models.User, error)
+type UserService struct {
+	Repo *repository.UserRepository
 }
 
-type userService struct {
-	repo repository.UserRepository
+func NewUserService(repo *repository.UserRepository) *UserService {
+	return &UserService{Repo: repo}
 }
 
-func NewUserService(r repository.UserRepository) UserService {
-	return &userService{r}
-}
-
-func (s *userService) GetAllUsers() ([]models.User, error) {
-	return s.repo.GetAll()
+func (s *UserService) GetUsers() ([]models.User, error) {
+	return s.Repo.GetAllUsers()
 }
