@@ -2,24 +2,31 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
-	_ "github.com/go-sql-driver/mysql"
+	"go-mysql-backend/config"
+
+	_ "github.com/lib/pq"
 )
 
 var DB *sql.DB
 
-func InitMySQL() {
+func Init() {
+	cfg := config.AppConfig
+
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
+
 	var err error
-	dsn := "root:password@tcp(127.0.0.1:3306)/testdb"
-	DB, err = sql.Open("mysql", dsn)
+	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
-		log.Fatal("Error connecting to DB:", err)
+		log.Fatal("Failed to connect to database:", err)
 	}
 
 	if err = DB.Ping(); err != nil {
-		log.Fatal("DB unreachable:", err)
+		log.Fatal("Database unreachable:", err)
 	}
 
-	log.Println("Connected to MySQL")
+	fmt.Println("PostgreSQL connected successfully!")
 }
