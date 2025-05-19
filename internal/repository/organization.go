@@ -22,7 +22,9 @@ type MinistryWithDepartments struct {
 
 func GetMinistriesWithDepartments(r *OrganizationRepository) ([]MinistryWithDepartments, error) {
 	rows, err := r.DB.Query(`
-        SELECT m.id, m.name, d.id, d.name, d.ministry_id
+        SELECT 
+            m.id, m.name, m.google_map_script,
+            d.id, d.name, d.ministry_id, d.google_map_script
         FROM ministry m
         LEFT JOIN department d ON m.id = d.ministry_id
         ORDER BY m.id
@@ -37,32 +39,41 @@ func GetMinistriesWithDepartments(r *OrganizationRepository) ([]MinistryWithDepa
 	for rows.Next() {
 		var mID int
 		var mName string
+		var mMapScript sql.NullString
 		var dID sql.NullInt64
 		var dName sql.NullString
 		var dMinistryID sql.NullInt64
+		var dMapScript sql.NullString
 
-		err := rows.Scan(&mID, &mName, &dID, &dName, &dMinistryID)
+		err := rows.Scan(
+			&mID, &mName, &mMapScript,
+			&dID, &dName, &dMinistryID, &dMapScript,
+		)
 		if err != nil {
 			return nil, err
 		}
 
 		if _, exists := ministriesMap[mID]; !exists {
 			ministriesMap[mID] = &MinistryWithDepartments{
-				Ministry: models.Ministry{ID: mID, Name: mName},
+				Ministry: models.Ministry{
+					ID:                mID,
+					Name:              mName,
+					Google_map_script: mMapScript.String,
+				},
 			}
 		}
 
 		if dID.Valid {
 			dept := models.Department{
-				ID:         int(dID.Int64),
-				Name:       dName.String,
-				MinistryID: int(dMinistryID.Int64),
+				ID:                int(dID.Int64),
+				Name:              dName.String,
+				MinistryID:        int(dMinistryID.Int64),
+				Google_map_script: dMapScript.String,
 			}
 			ministriesMap[mID].Departments = append(ministriesMap[mID].Departments, dept)
 		}
 	}
 
-	// Convert map to slice
 	var ministries []MinistryWithDepartments
 	for _, m := range ministriesMap {
 		ministries = append(ministries, *m)
