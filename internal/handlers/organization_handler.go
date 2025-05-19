@@ -103,3 +103,27 @@ func (h *OrganizationHandler) GetMinistryByID(w http.ResponseWriter, r *http.Req
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(ministry)
 }
+
+func (h *OrganizationHandler) GetDepartmentByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid department ID", http.StatusBadRequest)
+		return
+	}
+
+	dept, err := h.Service.GetDepartmentByID(id)
+	if err != nil {
+		http.Error(w, "Error fetching department", http.StatusInternalServerError)
+		return
+	}
+	if dept == nil {
+		http.Error(w, "Department not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(dept)
+}

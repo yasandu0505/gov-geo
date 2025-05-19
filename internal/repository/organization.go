@@ -122,3 +122,17 @@ func (r *OrganizationRepository) GetMinistryByID(id int) (models.Ministry, error
 	}
 	return ministry, nil
 }
+
+func (r *OrganizationRepository) GetDepartmentByID(id int) (*models.Department, error) {
+	row := r.DB.QueryRow(`SELECT id, name, google_map_script, ministry_id FROM department WHERE id = $1`, id)
+
+	var dept models.Department
+	err := row.Scan(&dept.ID, &dept.Name, &dept.Google_map_script, &dept.MinistryID)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &dept, nil
+}
