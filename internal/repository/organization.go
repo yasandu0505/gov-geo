@@ -104,19 +104,21 @@ func (r *OrganizationRepository) GetAllDepartments() ([]models.Department, error
 
 func (r *OrganizationRepository) CreateMinistry(ministry models.Ministry) (int, error) {
 	var id int
-	err := r.DB.QueryRow(`INSERT INTO ministry (name) VALUES ($1) RETURNING id`, ministry.Name).Scan(&id)
+	err := r.DB.QueryRow(`INSERT INTO ministry (name, google_map_script) VALUES ($1, $2) RETURNING id`,
+		ministry.Name, ministry.Google_map_script).Scan(&id)
 	return id, err
 }
 
 func (r *OrganizationRepository) CreateDepartment(dept models.Department) (int, error) {
 	var id int
-	err := r.DB.QueryRow(`INSERT INTO department (name, ministry_id) VALUES ($1, $2) RETURNING id`, dept.Name, dept.MinistryID).Scan(&id)
+	err := r.DB.QueryRow(`INSERT INTO department (name, ministry_id, google_map_script) VALUES ($1, $2, $3) RETURNING id`, dept.Name, dept.MinistryID, dept.Google_map_script).Scan(&id)
 	return id, err
 }
 
 func (r *OrganizationRepository) GetMinistryByID(id int) (models.Ministry, error) {
 	var ministry models.Ministry
-	err := r.DB.QueryRow(`SELECT id, name FROM ministry WHERE id = $1`, id).Scan(&ministry.ID, &ministry.Name)
+	err := r.DB.QueryRow(`SELECT id, name, google_map_script FROM ministry WHERE id = $1`, id).Scan(
+		&ministry.ID, &ministry.Name, &ministry.Google_map_script)
 	if err != nil {
 		return ministry, err
 	}
