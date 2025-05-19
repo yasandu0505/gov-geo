@@ -45,6 +45,16 @@ func (h *OrganizationHandler) CreateMinistry(w http.ResponseWriter, r *http.Requ
 	})
 }
 
+func (h *OrganizationHandler) GetAllDepartments(w http.ResponseWriter, r *http.Request) {
+	departments, err := h.Service.GetAllDepartments()
+	if err != nil {
+		http.Error(w, "Error fetching departments", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(departments)
+}
+
 func (h *OrganizationHandler) CreateDepartment(w http.ResponseWriter, r *http.Request) {
 	var dept models.Department
 	if err := json.NewDecoder(r.Body).Decode(&dept); err != nil {

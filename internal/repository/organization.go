@@ -70,6 +70,27 @@ func GetMinistriesWithDepartments(r *OrganizationRepository) ([]MinistryWithDepa
 
 	return ministries, nil
 }
+
+func (r *OrganizationRepository) GetAllDepartments() ([]models.Department, error) {
+	rows, err := r.DB.Query(`SELECT id, name, ministry_id, google_map_script FROM department`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var departments []models.Department
+	for rows.Next() {
+		var d models.Department
+		err := rows.Scan(&d.ID, &d.Name, &d.MinistryID, &d.Google_map_script)
+		if err != nil {
+			return nil, err
+		}
+		departments = append(departments, d)
+	}
+
+	return departments, nil
+}
+
 func (r *OrganizationRepository) CreateMinistry(ministry models.Ministry) (int, error) {
 	var id int
 	err := r.DB.QueryRow(`INSERT INTO ministry (name) VALUES ($1) RETURNING id`, ministry.Name).Scan(&id)

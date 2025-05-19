@@ -24,3 +24,6 @@ func (s *OrganizationService) CreateMinistry(ministry models.Ministry) (int, err
 func (s *OrganizationService) CreateDepartment(department models.Department) (int, error) {
 	return s.Repo.CreateDepartment(department)
 }
+func (s *OrganizationService) GetAllDepartments() ([]models.Department, error) {
+	return s.Repo.GetAllDepartments()
+}
