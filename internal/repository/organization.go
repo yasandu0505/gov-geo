@@ -81,3 +81,12 @@ func (r *OrganizationRepository) CreateDepartment(dept models.Department) (int, 
 	err := r.DB.QueryRow(`INSERT INTO department (name, ministry_id) VALUES ($1, $2) RETURNING id`, dept.Name, dept.MinistryID).Scan(&id)
 	return id, err
 }
+
+func (r *OrganizationRepository) GetMinistryByID(id int) (models.Ministry, error) {
+	var ministry models.Ministry
+	err := r.DB.QueryRow(`SELECT id, name FROM ministry WHERE id = $1`, id).Scan(&ministry.ID, &ministry.Name)
+	if err != nil {
+		return ministry, err
+	}
+	return ministry, nil
+}

@@ -12,6 +12,7 @@ import (
 	"go-mysql-backend/internal/service"
 	"go-mysql-backend/routes"
 
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
 
@@ -37,8 +38,10 @@ func main() {
 	orgRepo := repository.NewOrganizationRepository(db)
 	orgService := service.NewOrganizationService(orgRepo)
 	orgHandler := handlers.NewOrganizationHandler(orgService)
-	routes.SetupOrgRoutes(orgHandler)
+
+	router := mux.NewRouter()
+	routes.SetupOrgRoutes(router, orgHandler)
 
 	fmt.Println("Server running at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", router))
 }

@@ -24,3 +24,10 @@ func (s *OrganizationService) CreateMinistry(ministry models.Ministry) (int, err
 func (s *OrganizationService) CreateDepartment(department models.Department) (int, error) {
 	return s.Repo.CreateDepartment(department)
 }
+func (s *OrganizationService) GetMinistryByID(id int) (models.Ministry, error) {
+	ministry, err := s.Repo.GetMinistryByID(id)
+	if err != nil {
+		return models.Ministry{}, err
+	}
+	return ministry, nil
+}

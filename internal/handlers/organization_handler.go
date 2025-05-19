@@ -5,6 +5,9 @@ import (
 	"go-mysql-backend/internal/models"
 	"go-mysql-backend/internal/service"
 	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 type OrganizationHandler struct {
@@ -69,4 +72,24 @@ func (h *OrganizationHandler) CreateDepartment(w http.ResponseWriter, r *http.Re
 		"message": "Department created successfully",
 		"id":      id,
 	})
+}
+
+func (h *OrganizationHandler) GetMinistryByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idStr := vars["id"] // read from /ministries/{id}
+
+	ministryID, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ministry ID", http.StatusBadRequest)
+		return
+	}
+
+	ministry, err := h.Service.GetMinistryByID(ministryID)
+	if err != nil {
+		http.Error(w, "Error fetching ministry", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(ministry)
 }
