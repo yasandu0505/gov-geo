@@ -34,11 +34,10 @@ func main() {
 
 	fmt.Println("✅ Successfully connected to PostgreSQL!")
 
-	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
-
-	routes.SetupRoutes(userHandler)
+	orgRepo := repository.NewOrganizationRepository(db)
+	orgService := service.NewOrganizationService(orgRepo)
+	orgHandler := handlers.NewOrganizationHandler(orgService)
+	routes.SetupOrgRoutes(orgHandler)
 
 	fmt.Println("Server running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
