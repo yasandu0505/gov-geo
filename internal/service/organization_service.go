@@ -27,3 +27,10 @@ func (s *OrganizationService) CreateDepartment(department models.Department) (in
 func (s *OrganizationService) GetAllDepartments() ([]models.Department, error) {
 	return s.Repo.GetAllDepartments()
 }
+func (s *OrganizationService) GetMinistryByID(id int) (models.Ministry, error) {
+	ministry, err := s.Repo.GetMinistryByID(id)
+	if err != nil {
+		return models.Ministry{}, err
+	}
+	return ministry, nil
+}
