@@ -70,3 +70,14 @@ func GetMinistriesWithDepartments(r *OrganizationRepository) ([]MinistryWithDepa
 
 	return ministries, nil
 }
+func (r *OrganizationRepository) CreateMinistry(ministry models.Ministry) (int, error) {
+	var id int
+	err := r.DB.QueryRow(`INSERT INTO ministry (name) VALUES ($1) RETURNING id`, ministry.Name).Scan(&id)
+	return id, err
+}
+
+func (r *OrganizationRepository) CreateDepartment(dept models.Department) (int, error) {
+	var id int
+	err := r.DB.QueryRow(`INSERT INTO department (name, ministry_id) VALUES ($1, $2) RETURNING id`, dept.Name, dept.MinistryID).Scan(&id)
+	return id, err
+}

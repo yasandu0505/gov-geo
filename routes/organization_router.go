@@ -7,4 +7,5 @@ import (
 
 func SetupOrgRoutes(OrganizationHandler *handlers.OrganizationHandler) {
 	http.HandleFunc("/ministries", OrganizationHandler.GetMinistriesWithDepartments)
+	http.HandleFunc("/ministries/create", OrganizationHandler.CreateMinistry)
 }

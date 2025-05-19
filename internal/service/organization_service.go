@@ -1,6 +1,7 @@
 package service
 
 import (
+	"go-mysql-backend/internal/models"
 	"go-mysql-backend/internal/repository"
 )
 
@@ -14,4 +15,12 @@ func NewOrganizationService(repo *repository.OrganizationRepository) *Organizati
 
 func (s *OrganizationService) GetMinistriesWithDepartments() ([]repository.MinistryWithDepartments, error) {
 	return repository.GetMinistriesWithDepartments(s.Repo)
+}
+
+func (s *OrganizationService) CreateMinistry(ministry models.Ministry) (int, error) {
+	return s.Repo.CreateMinistry(ministry)
+}
+
+func (s *OrganizationService) CreateDepartment(department models.Department) (int, error) {
+	return s.Repo.CreateDepartment(department)
 }
