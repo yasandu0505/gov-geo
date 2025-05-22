@@ -44,11 +44,26 @@ func (r *OrganizationNeo4jRepository) GetAllDepartments() ([]models.Department, 
 			fmt.Sscanf(did, "dept_%d", &deptID)
 		}
 
+		// Safely handle name and google_map_script
+		name := ""
+		if nameVal, ok := result["name"]; ok && nameVal != nil {
+			if nameStr, ok := nameVal.(string); ok {
+				name = nameStr
+			}
+		}
+
+		mapScript := ""
+		if scriptVal, ok := result["google_map_script"]; ok && scriptVal != nil {
+			if scriptStr, ok := scriptVal.(string); ok {
+				mapScript = scriptStr
+			}
+		}
+
 		dept := models.Department{
 			ID:                deptID,
-			Name:              result["name"].(string),
+			Name:              name,
 			MinistryID:        ministryID,
-			Google_map_script: result["google_map_script"].(string),
+			Google_map_script: mapScript,
 		}
 		departments = append(departments, dept)
 	}
