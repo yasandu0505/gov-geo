@@ -1,12 +1,11 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 
-	"go-mysql-backend/config"
+	"go-mysql-backend/internal/db"
 	"go-mysql-backend/internal/handlers"
 	"go-mysql-backend/internal/repository"
 	"go-mysql-backend/internal/service"
@@ -14,26 +13,12 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"github.com/rs/cors"
 )
 
 func main() {
-	cfg := config.LoadConfig()
-	if cfg.DatabaseURL == "" {
-		log.Fatal("DATABASE_URL not provided")
-	}
 
-	db, err := sql.Open("postgres", cfg.DatabaseURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("✅ Successfully connected to PostgreSQL!")
+	db := db.InitPostgres()
 
 	orgRepo := repository.NewOrganizationRepository(db)
 	orgService := service.NewOrganizationService(orgRepo)
@@ -42,6 +27,14 @@ func main() {
 	router := mux.NewRouter()
 	routes.SetupOrgRoutes(router, orgHandler)
 
+	// Wrapping the router with CORS middleware
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+	}).Handler(router)
+
 	fmt.Println("Server running at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080", corsHandler)) // Using corsHandler
 }
