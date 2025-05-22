@@ -20,7 +20,8 @@ type MinistryWithDepartments struct {
 	Departments []models.Department
 }
 
-func GetMinistriesWithDepartments(r *OrganizationRepository) ([]MinistryWithDepartments, error) {
+// GetMinistriesWithDepartments retrieves all ministries with their departments
+func (r *OrganizationRepository) GetMinistriesWithDepartments() ([]MinistryWithDepartments, error) {
 	rows, err := r.DB.Query(`
         SELECT 
             m.id, m.name, m.google_map_script,

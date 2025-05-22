@@ -6,15 +6,15 @@ import (
 )
 
 type OrganizationService struct {
-	Repo *repository.OrganizationRepository
+	Repo repository.OrganizationRepositoryInterface
 }
 
-func NewOrganizationService(repo *repository.OrganizationRepository) *OrganizationService {
+func NewOrganizationService(repo repository.OrganizationRepositoryInterface) *OrganizationService {
 	return &OrganizationService{Repo: repo}
 }
 
 func (s *OrganizationService) GetMinistriesWithDepartments() ([]repository.MinistryWithDepartments, error) {
-	return repository.GetMinistriesWithDepartments(s.Repo)
+	return s.Repo.GetMinistriesWithDepartments()
 }
 
 func (s *OrganizationService) CreateMinistry(ministry models.Ministry) (int, error) {
@@ -28,11 +28,7 @@ func (s *OrganizationService) GetAllDepartments() ([]models.Department, error) {
 	return s.Repo.GetAllDepartments()
 }
 func (s *OrganizationService) GetMinistryByID(id int) (models.Ministry, error) {
-	ministry, err := s.Repo.GetMinistryByID(id)
-	if err != nil {
-		return models.Ministry{}, err
-	}
-	return ministry, nil
+	return s.Repo.GetMinistryByID(id)
 }
 
 func (s *OrganizationService) GetDepartmentByID(id int) (*models.Department, error) {
