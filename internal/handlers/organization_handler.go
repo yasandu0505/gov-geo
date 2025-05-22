@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	apierrors "go-mysql-backend/internal/errors"
 	"go-mysql-backend/internal/models"
 	"go-mysql-backend/internal/service"
 	"net/http"
@@ -21,11 +22,10 @@ func NewOrganizationHandler(service *service.OrganizationService) *OrganizationH
 func (h *OrganizationHandler) GetMinistriesWithDepartments(w http.ResponseWriter, r *http.Request) {
 	ministries, err := h.Service.GetMinistriesWithDepartments()
 	if err != nil {
-		http.Error(w, "Error fetching ministries", http.StatusInternalServerError)
+		respondWithError(w, apierrors.ErrInternal)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(ministries)
+	respondWithJSON(w, http.StatusOK, ministries)
 }
 
 func (h *OrganizationHandler) GetMinistriesWithDepartmentsPaginated(w http.ResponseWriter, r *http.Request) {
@@ -57,18 +57,22 @@ func (h *OrganizationHandler) GetMinistriesWithDepartmentsPaginated(w http.Respo
 func (h *OrganizationHandler) CreateMinistry(w http.ResponseWriter, r *http.Request) {
 	var ministry models.Ministry
 	if err := json.NewDecoder(r.Body).Decode(&ministry); err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
+		respondWithError(w, apierrors.ErrInvalidInput)
+		return
+	}
+
+	if ministry.Name == "" {
+		respondWithError(w, apierrors.ErrMissingField)
 		return
 	}
 
 	id, err := h.Service.CreateMinistry(ministry)
 	if err != nil {
-		http.Error(w, "Error creating ministry", http.StatusInternalServerError)
+		respondWithError(w, apierrors.ErrInternal)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	respondWithJSON(w, http.StatusCreated, map[string]interface{}{
 		"message": "Ministry created successfully",
 		"id":      id,
 	})
@@ -77,34 +81,31 @@ func (h *OrganizationHandler) CreateMinistry(w http.ResponseWriter, r *http.Requ
 func (h *OrganizationHandler) GetAllDepartments(w http.ResponseWriter, r *http.Request) {
 	departments, err := h.Service.GetAllDepartments()
 	if err != nil {
-		http.Error(w, "Error fetching departments", http.StatusInternalServerError)
+		respondWithError(w, apierrors.ErrInternal)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(departments)
+	respondWithJSON(w, http.StatusOK, departments)
 }
 
 func (h *OrganizationHandler) CreateDepartment(w http.ResponseWriter, r *http.Request) {
 	var dept models.Department
 	if err := json.NewDecoder(r.Body).Decode(&dept); err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
+		respondWithError(w, apierrors.ErrDepartmentNotFound)
 		return
 	}
 
-	// Check for required fields
 	if dept.Name == "" || dept.MinistryID == 0 {
-		http.Error(w, "Missing department name or ministry_id", http.StatusBadRequest)
+		respondWithError(w, apierrors.ErrMissingField)
 		return
 	}
 
 	id, err := h.Service.CreateDepartment(dept)
 	if err != nil {
-		http.Error(w, "Error creating department", http.StatusInternalServerError)
+		respondWithError(w, apierrors.ErrInternal)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	respondWithJSON(w, http.StatusCreated, map[string]interface{}{
 		"message": "Department created successfully",
 		"id":      id,
 	})
@@ -112,22 +113,25 @@ func (h *OrganizationHandler) CreateDepartment(w http.ResponseWriter, r *http.Re
 
 func (h *OrganizationHandler) GetMinistryByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	idStr := vars["id"] // read from /ministries/{id}
+	idStr := vars["id"]
 
 	ministryID, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid ministry ID", http.StatusBadRequest)
+		respondWithError(w, apierrors.ErrInvalidInput)
 		return
 	}
 
 	ministry, err := h.Service.GetMinistryByID(ministryID)
 	if err != nil {
-		http.Error(w, "Error fetching ministry", http.StatusInternalServerError)
+		respondWithError(w, apierrors.ErrMinistryNotFound)
+		return
+	}
+	if ministry.ID == 0 {
+		respondWithError(w, apierrors.ErrMinistryNotFound)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(ministry)
+	respondWithJSON(w, http.StatusOK, ministry)
 }
 
 func (h *OrganizationHandler) GetDepartmentByID(w http.ResponseWriter, r *http.Request) {
@@ -136,20 +140,19 @@ func (h *OrganizationHandler) GetDepartmentByID(w http.ResponseWriter, r *http.R
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid department ID", http.StatusBadRequest)
+		respondWithError(w, apierrors.ErrInvalidInput)
 		return
 	}
 
 	dept, err := h.Service.GetDepartmentByID(id)
 	if err != nil {
-		http.Error(w, "Error fetching department", http.StatusInternalServerError)
+		respondWithError(w, apierrors.ErrInternal)
 		return
 	}
 	if dept == nil {
-		http.Error(w, "Department not found", http.StatusNotFound)
+		respondWithError(w, apierrors.ErrDepartmentNotFound)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(dept)
+	respondWithJSON(w, http.StatusOK, dept)
 }
