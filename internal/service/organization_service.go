@@ -18,7 +18,7 @@ func (s *OrganizationService) GetMinistriesWithDepartments() ([]repository.Minis
 }
 
 func (s *OrganizationService) GetMinistriesWithDepartmentsPaginated(limit, offset int) ([]repository.MinistryWithDepartments, error) {
-	return s.Repo.GetMinistriesWithDepartmentsPaginated(limit, offset)
+	return repository.GetMinistriesWithDepartmentsPaginated(s.Repo, limit, offset)
 }
 
 func (s *OrganizationService) CreateMinistry(ministry models.Ministry) (int, error) {
