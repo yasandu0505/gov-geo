@@ -82,6 +82,65 @@ func GetMinistriesWithDepartments(r *OrganizationRepository) ([]MinistryWithDepa
 	return ministries, nil
 }
 
+func (r *OrganizationRepository) GetMinistriesWithDepartmentsPaginated(limit, offset int) ([]MinistryWithDepartments, error) {
+	query := `
+        SELECT 
+            m.id, m.name, m.google_map_script,
+            d.id, d.name, d.google_map_script, d.ministry_id
+        FROM ministry m
+        LEFT JOIN department d ON m.id = d.ministry_id
+        ORDER BY m.id
+        LIMIT $1 OFFSET $2
+    `
+	rows, err := r.DB.Query(query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	ministriesMap := make(map[int]*MinistryWithDepartments)
+
+	for rows.Next() {
+		var mID int
+		var mName, mScript string
+		var dID sql.NullInt64
+		var dName, dScript sql.NullString
+		var dMinistryID sql.NullInt64
+
+		err := rows.Scan(&mID, &mName, &mScript, &dID, &dName, &dScript, &dMinistryID)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, exists := ministriesMap[mID]; !exists {
+			ministriesMap[mID] = &MinistryWithDepartments{
+				Ministry: models.Ministry{
+					ID:                mID,
+					Name:              mName,
+					Google_map_script: mScript,
+				},
+			}
+		}
+
+		if dID.Valid {
+			dept := models.Department{
+				ID:                int(dID.Int64),
+				Name:              dName.String,
+				Google_map_script: dScript.String,
+				MinistryID:        int(dMinistryID.Int64),
+			}
+			ministriesMap[mID].Departments = append(ministriesMap[mID].Departments, dept)
+		}
+	}
+
+	var ministries []MinistryWithDepartments
+	for _, m := range ministriesMap {
+		ministries = append(ministries, *m)
+	}
+
+	return ministries, nil
+}
+
 func (r *OrganizationRepository) GetAllDepartments() ([]models.Department, error) {
 	rows, err := r.DB.Query(`SELECT id, name, ministry_id, google_map_script FROM department`)
 	if err != nil {

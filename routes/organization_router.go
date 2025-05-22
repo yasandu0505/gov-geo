@@ -8,6 +8,7 @@ import (
 
 func SetupOrgRoutes(router *mux.Router, OrganizationHandler *handlers.OrganizationHandler) {
 	router.HandleFunc("/ministries", OrganizationHandler.GetMinistriesWithDepartments).Methods("GET")
+	router.HandleFunc("/ministries/paginated", OrganizationHandler.GetMinistriesWithDepartmentsPaginated).Methods("GET")
 	router.HandleFunc("/ministries", OrganizationHandler.CreateMinistry).Methods("POST")
 	router.HandleFunc("/departments", OrganizationHandler.CreateDepartment).Methods("POST")
 	router.HandleFunc("/departments", OrganizationHandler.GetAllDepartments).Methods("GET")
