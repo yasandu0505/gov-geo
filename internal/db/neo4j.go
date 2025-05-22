@@ -18,7 +18,7 @@ func InitNeo4j() {
 	}
 
 	dbUri := os.Getenv("NEO4J_URL")
-	dbUser := os.Getenv("NEO4J_USERNAME")
+	dbUser := os.Getenv("NEO4J_USER")
 	dbPassword := os.Getenv("NEO4J_PASSWORD")
 
 	driver, err := neo4j.NewDriverWithContext(
