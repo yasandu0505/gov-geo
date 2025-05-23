@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,23 +22,7 @@ func main() {
 	dbType := config.LoadType()
 	if dbType == "postgres" {
 
-		cfg := config.LoadConfig()
-		if cfg.DatabaseURL == "" {
-			log.Fatal("DATABASE_URL not provided")
-		}
-
-		db, err := sql.Open("postgres", cfg.DatabaseURL)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer db.Close()
-
-		err = db.Ping()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println("✅ Successfully connected to PostgreSQL!")
+		db := db.InitPostgres()
 
 		orgRepo := repository.NewOrganizationRepository(db)
 		orgService := service.NewOrganizationService(orgRepo)
@@ -48,16 +31,7 @@ func main() {
 		router := mux.NewRouter()
 		routes.SetupOrgRoutes(router, orgHandler)
 
-		// Wrapping the router with CORS middleware
-		corsHandler := cors.New(cors.Options{
-			AllowedOrigins:   []string{"http://localhost:5173"},
-			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-			AllowedHeaders:   []string{"Content-Type"},
-			AllowCredentials: true,
-		}).Handler(router)
-
-		fmt.Println("Server running at http://localhost:8080")
-		log.Fatal(http.ListenAndServe(":8080", corsHandler)) // Using corsHandler
+		startServer(router)
 
 	} else if dbType == "neo4j" {
 
@@ -70,13 +44,19 @@ func main() {
 		neoHandler := handlers.NewNeo4JHandler(neoService)
 		router := mux.NewRouter()
 		routes.SetupNeo4JRoutes(router, neoHandler)
-		corsHandler := cors.New(cors.Options{
-			AllowedOrigins:   []string{"http://localhost:5173"},
-			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-			AllowedHeaders:   []string{"Content-Type"},
-			AllowCredentials: true,
-		}).Handler(router)
-		fmt.Println("Server running at http://localhost:8080")
-		log.Fatal(http.ListenAndServe(":8080", corsHandler)) // Using corsHandler
+
+		startServer(router)
 	}
+}
+
+func startServer(router *mux.Router) {
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+	}).Handler(router)
+
+	fmt.Println("Server running at http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", corsHandler))
 }
