@@ -77,7 +77,7 @@ func GetMinistriesWithDepartments(r *OrganizationRepository) ([]models.MinistryW
 	return ministries, nil
 }
 
-func (r *OrganizationRepository) GetMinistriesWithDepartmentsPaginated(limit, offset int) ([]MinistryWithDepartments, error) {
+func (r *OrganizationRepository) GetMinistriesWithDepartmentsPaginated(limit, offset int) ([]models.MinistryWithDepartments, error) {
 	query := `
         SELECT 
             m.id, m.name, m.google_map_script,
@@ -93,7 +93,7 @@ func (r *OrganizationRepository) GetMinistriesWithDepartmentsPaginated(limit, of
 	}
 	defer rows.Close()
 
-	ministriesMap := make(map[int]*MinistryWithDepartments)
+	ministriesMap := make(map[int]*models.MinistryWithDepartments)
 
 	for rows.Next() {
 		var mID int
@@ -108,7 +108,7 @@ func (r *OrganizationRepository) GetMinistriesWithDepartmentsPaginated(limit, of
 		}
 
 		if _, exists := ministriesMap[mID]; !exists {
-			ministriesMap[mID] = &MinistryWithDepartments{
+			ministriesMap[mID] = &models.MinistryWithDepartments{
 				Ministry: models.Ministry{
 					ID:                mID,
 					Name:              mName,
@@ -128,7 +128,7 @@ func (r *OrganizationRepository) GetMinistriesWithDepartmentsPaginated(limit, of
 		}
 	}
 
-	var ministries []MinistryWithDepartments
+	var ministries []models.MinistryWithDepartments
 	for _, m := range ministriesMap {
 		ministries = append(ministries, *m)
 	}
