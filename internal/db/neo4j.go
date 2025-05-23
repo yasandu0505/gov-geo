@@ -14,7 +14,7 @@ func InitNeo4j() (neo4j.DriverWithContext, error) {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("⚠️ No .env file found. Using system environment variables.")
+		log.Println("No .env file found. Using system environment variables.")
 	}
 
 	dbUri := os.Getenv("NEO4J_URL")
