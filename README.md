@@ -1,74 +1,108 @@
-# Go MySQL Backend API
+# Government Geographic Data API
 
-A simple, modular RESTful API built in Go (Golang) that connects to a MySQL database. It follows a clean architecture with proper separation of concerns (handlers, services, repositories, and models).
+A robust RESTful API built in Go (Golang) that provides access to government geographic data, supporting both PostgreSQL and Neo4j databases. The project follows clean architecture principles with proper separation of concerns.
 
-## 📁 Project Structure
+##  Project Structure
 
-go-mysql-backend/
+```
+gov-geo/
 │
 ├── cmd/
 │   └── server/             # Main entry point of the application
 │
-├── config/                 # Configuration settings (e.g. database credentials)
+├── config/                 # Configuration settings
 │
 ├── internal/
 │   ├── db/                 # Database connection logic
 │   ├── models/             # Data models (structs)
-│   ├── repository/         # Data access layer (SQL queries)
+│   ├── repository/         # Data access layer
 │   ├── service/            # Business logic layer
-│   └── handler/            # HTTP request handlers (controllers)
+│   └── handler/            # HTTP request handlers
 │
 ├── routes/                 # Route definitions
 │
 ├── go.mod                  # Go module file
 ├── go.sum                  # Go module checksum file
-└── README.md               # Project documentation
+└── README.md              # Project documentation
+```
 
-## 🛠️ Technologies Used
+## Technologies Used
 
-- Go (Golang)
-- MySQL
+- Go (Golang) 1.24.3
+- PostgreSQL
+- Neo4j
 - Gorilla Mux (HTTP router)
-- Git
+- CORS support
+- Environment variable management (godotenv)
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### 1. Clone the repository
 
+```bash
 git clone https://github.com/yasandu0505/gov-geo.git
 cd gov-geo
+```
 
-### 2. Set up MySQL
+### 2. Set up the databases
 
-CREATE DATABASE testdb;
-USE testdb;
+#### PostgreSQL Setup
+```sql
+CREATE DATABASE gov_geo;
+```
 
-CREATE TABLE users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100),
-  email VARCHAR(100)
-);
+#### Neo4j Setup
+- Install Neo4j Desktop or use Neo4j Aura
+- Create a new database
+- Note down your connection credentials
 
-INSERT INTO users (name, email) VALUES
-('Alice', 'alice@example.com'),
-('Bob', 'bob@example.com');
+### 3. Configure environment variables
 
-### 3. Configure database credentials
+Create a `.env` file in the root directory with the following variables:
 
-Edit internal/db/mysql.go:
+```env
+# PostgreSQL Configuration
+POSTGRES_USER=your_username
+POSTGRES_PASSWORD=your_password
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=gov_geo
 
-dsn := "root:yourpassword@tcp(127.0.0.1:3306)/testdb"
+# Neo4j Configuration
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=your_password
+```
 
-Replace `yourpassword` with your actual MySQL password.
+### 4. Install dependencies
 
-### 4. Run the server
+```bash
+go mod download
+```
 
+### 5. Run the server
+
+```bash
 go run cmd/server/main.go
+```
 
-### 5. Test the API
+The server will start on `http://localhost:8080`
 
-GET http://localhost:8080/users
+##  API Endpoints
 
-## 🧾 License
+The API provides various endpoints for accessing and manipulating geographic data. Detailed API documentation can be found in the routes directory.
+
+##  Security
+
+- CORS is enabled for secure cross-origin requests
+- Environment variables are used for sensitive configuration
+- Database credentials are never hardcoded
+
+## License
 
 This project is licensed under the MIT License.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
