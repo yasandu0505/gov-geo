@@ -28,6 +28,32 @@ func (h *OrganizationHandler) GetMinistriesWithDepartments(w http.ResponseWriter
 	respondWithJSON(w, http.StatusOK, ministries)
 }
 
+func (h *OrganizationHandler) GetMinistriesWithDepartmentsPaginated(w http.ResponseWriter, r *http.Request) {
+	// Default values
+	limit := 10
+	offset := 0
+
+	// Parse from query params
+	if l := r.URL.Query().Get("limit"); l != "" {
+		if parsedLimit, err := strconv.Atoi(l); err == nil {
+			limit = parsedLimit
+		}
+	}
+	if o := r.URL.Query().Get("offset"); o != "" {
+		if parsedOffset, err := strconv.Atoi(o); err == nil {
+			offset = parsedOffset
+		}
+	}
+
+	ministries, err := h.Service.GetMinistriesWithDepartmentsPaginated(limit, offset)
+	if err != nil {
+		http.Error(w, "Error fetching ministries", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(ministries)
+}
+
 func (h *OrganizationHandler) CreateMinistry(w http.ResponseWriter, r *http.Request) {
 	var ministry models.Ministry
 	if err := json.NewDecoder(r.Body).Decode(&ministry); err != nil {
