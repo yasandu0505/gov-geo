@@ -39,6 +39,14 @@ func (s *OrganizationService) GetMinistryByID(id int) (models.Ministry, error) {
 	return ministry, nil
 }
 
+func (s *OrganizationService) GetMinistryByIDWithDepartments(id int) (models.MinistryWithDepartments, error) {
+	ministry, err := s.Repo.GetMinistryByIDWithDepartments(id)
+	if err != nil {
+		return models.MinistryWithDepartments{}, err
+	}
+	return ministry, nil
+}
+
 func (s *OrganizationService) GetDepartmentByID(id int) (*models.Department, error) {
 	return s.Repo.GetDepartmentByID(id)
 }

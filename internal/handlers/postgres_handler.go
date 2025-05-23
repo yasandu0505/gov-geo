@@ -134,6 +134,29 @@ func (h *OrganizationHandler) GetMinistryByID(w http.ResponseWriter, r *http.Req
 	respondWithJSON(w, http.StatusOK, ministry)
 }
 
+func (h *OrganizationHandler) GetMinistryByIDWithDepartments(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+
+	ministryID, err := strconv.Atoi(idStr)
+	if err != nil {
+		respondWithError(w, apierrors.ErrInvalidInput)
+		return
+	}
+
+	ministry, err := h.Service.GetMinistryByIDWithDepartments(ministryID)
+	if err != nil {
+		respondWithError(w, apierrors.ErrMinistryNotFound)
+		return
+	}
+	if ministry.ID == 0 {
+		respondWithError(w, apierrors.ErrMinistryNotFound)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, ministry)
+}
+
 func (h *OrganizationHandler) GetDepartmentByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]

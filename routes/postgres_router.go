@@ -12,7 +12,7 @@ func SetupOrgRoutes(router *mux.Router, OrganizationHandler *handlers.Organizati
 	router.HandleFunc("/ministries", OrganizationHandler.CreateMinistry).Methods("POST")
 	router.HandleFunc("/departments", OrganizationHandler.CreateDepartment).Methods("POST")
 	router.HandleFunc("/departments", OrganizationHandler.GetAllDepartments).Methods("GET")
-	router.HandleFunc("/ministries/{id}", OrganizationHandler.GetMinistryByID).Methods("GET")
+	router.HandleFunc("/ministries/{id}", OrganizationHandler.GetMinistryByIDWithDepartments).Methods("GET")
 	router.HandleFunc("/departments/{id}", OrganizationHandler.GetDepartmentByID).Methods("GET")
 
 }

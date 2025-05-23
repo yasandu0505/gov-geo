@@ -16,3 +16,7 @@ func NewNeo4JService(repo *repository.Neo4jRepository) *Neo4JService {
 func (s *Neo4JService) GetMinistriesWithDepartments() ([]models.MinistryWithDepartments, error) {
 	return s.Repo.GetMinistriesWithDepartments()
 }
+
+func (s *Neo4JService) GetMinistryByIDWithDepartments(id int) (models.MinistryWithDepartments, error) {
+	return s.Repo.GetMinistryByIDWithDepartments(id)
+}

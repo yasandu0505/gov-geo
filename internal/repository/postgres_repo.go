@@ -179,6 +179,63 @@ func (r *OrganizationRepository) GetMinistryByID(id int) (models.Ministry, error
 	return ministry, nil
 }
 
+func (r *OrganizationRepository) GetMinistryByIDWithDepartments(id int) (models.MinistryWithDepartments, error) {
+	var ministryWithDepts models.MinistryWithDepartments
+
+	rows, err := r.DB.Query(`
+		SELECT 
+			m.id, m.name, m.google_map_script,
+			d.id, d.name, d.google_map_script, d.ministry_id
+		FROM ministry m
+		LEFT JOIN department d ON m.id = d.ministry_id
+		WHERE m.id = $1
+	`, id)
+	if err != nil {
+		return ministryWithDepts, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var mID int
+		var mName, mScript string
+		var dID sql.NullInt64
+		var dName, dScript sql.NullString
+		var dMinistryID sql.NullInt64
+
+		err := rows.Scan(&mID, &mName, &mScript, &dID, &dName, &dScript, &dMinistryID)
+		if err != nil {
+			return ministryWithDepts, err
+		}
+
+		// Assign ministry details once
+		if ministryWithDepts.Ministry.ID == 0 {
+			ministryWithDepts.Ministry = models.Ministry{
+				ID:                mID,
+				Name:              mName,
+				Google_map_script: mScript,
+			}
+		}
+
+		// Add department if present
+		if dID.Valid {
+			dept := models.Department{
+				ID:                int(dID.Int64),
+				Name:              dName.String,
+				Google_map_script: dScript.String,
+				MinistryID:        int(dMinistryID.Int64),
+			}
+			ministryWithDepts.Departments = append(ministryWithDepts.Departments, dept)
+		}
+	}
+
+	// If no rows found, return error
+	if ministryWithDepts.Ministry.ID == 0 {
+		return ministryWithDepts, sql.ErrNoRows
+	}
+
+	return ministryWithDepts, nil
+}
+
 func (r *OrganizationRepository) GetDepartmentByID(id int) (*models.Department, error) {
 	row := r.DB.QueryRow(`SELECT id, name, google_map_script, ministry_id FROM department WHERE id = $1`, id)
 
