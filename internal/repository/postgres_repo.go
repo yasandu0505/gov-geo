@@ -97,13 +97,12 @@ func (r *OrganizationRepository) GetMinistriesWithDepartmentsPaginated(limit, of
 
 	for rows.Next() {
 		var mID int
-		var mName, mScript string
+		var mName, mMap string
 		var dID sql.NullInt64
-		var dName, dScript sql.NullString
+		var dName, dMap sql.NullString
 		var dMinistryID sql.NullInt64
 
-		err := rows.Scan(&mID, &mName, &mScript, &dID, &dName, &dScript, &dMinistryID)
-		if err != nil {
+		if err := rows.Scan(&mID, &mName, &mMap, &dID, &dName, &dMinistryID, &dMap); err != nil {
 			return nil, err
 		}
 
@@ -112,7 +111,7 @@ func (r *OrganizationRepository) GetMinistriesWithDepartmentsPaginated(limit, of
 				Ministry: models.Ministry{
 					ID:                mID,
 					Name:              mName,
-					Google_map_script: mScript,
+					Google_map_script: mMap,
 				},
 			}
 		}
@@ -121,8 +120,8 @@ func (r *OrganizationRepository) GetMinistriesWithDepartmentsPaginated(limit, of
 			dept := models.Department{
 				ID:                int(dID.Int64),
 				Name:              dName.String,
-				Google_map_script: dScript.String,
 				MinistryID:        int(dMinistryID.Int64),
+				Google_map_script: dMap.String,
 			}
 			ministriesMap[mID].Departments = append(ministriesMap[mID].Departments, dept)
 		}
