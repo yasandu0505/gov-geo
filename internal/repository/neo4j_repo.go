@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"time"
 
 	"go-mysql-backend/internal/models"
 
@@ -162,4 +164,82 @@ func (r *Neo4jRepository) GetMinistryByIDWithDepartments(ministryID int) (models
 	}
 
 	return ministryWithDepts, nil
+}
+func generateRandomMinistryName() string {
+	prefixes := []string{"Ministry of", "Department of", "Office of"}
+	topics := []string{"Innovation", "Agriculture", "Wellbeing", "Technology", "Security", "Environment", "Commerce"}
+
+	return fmt.Sprintf("%s %s", randomItem(prefixes), randomItem(topics))
+}
+
+func generateRandomDepartmentName() string {
+	roles := []string{"Planning", "Operations", "Research", "Development", "Logistics", "Services"}
+	return fmt.Sprintf("%s Department", randomItem(roles))
+}
+
+func randomItem(list []string) string {
+	return list[rand.Intn(len(list))]
+}
+
+func (r *Neo4jRepository) SeedDummyData() error {
+	ctx := context.Background()
+	session := r.Driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	rand.Seed(time.Now().UnixNano())
+
+	numMinistries := 200
+	departmentsPerMinistry := 10
+
+	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (interface{}, error) {
+		deptGlobalID := 1 // ensure unique department IDs globally
+
+		for i := 1; i <= numMinistries; i++ {
+			ministryID := i
+			ministryName := generateRandomMinistryName()
+			ministryMap := fmt.Sprintf("<script src='map/%d.js'></script>", ministryID)
+
+			// Create Ministry
+			_, err := tx.Run(ctx, `
+				CREATE (m:Ministry {id: $id, name: $name, google_map_script: $map})
+			`, map[string]interface{}{
+				"id":   ministryID,
+				"name": ministryName,
+				"map":  ministryMap,
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			// Create Departments
+			for j := 0; j < departmentsPerMinistry; j++ {
+				deptID := deptGlobalID
+				deptName := generateRandomDepartmentName()
+				deptMap := fmt.Sprintf("<script src='dept/%d.js'></script>", deptID)
+
+				_, err := tx.Run(ctx, `
+					MATCH (m:Ministry {id: $ministryID})
+					CREATE (d:Department {
+						id: $deptID,
+						name: $name,
+						google_map_script: $map
+					})
+					CREATE (m)-[:HAS_DEPARTMENT]->(d)
+				`, map[string]interface{}{
+					"ministryID": ministryID,
+					"deptID":     deptID,
+					"name":       deptName,
+					"map":        deptMap,
+				})
+				if err != nil {
+					return nil, err
+				}
+
+				deptGlobalID++
+			}
+		}
+		return nil, nil
+	})
+
+	return err
 }

@@ -20,3 +20,7 @@ func (s *Neo4JService) GetMinistriesWithDepartments() ([]models.MinistryWithDepa
 func (s *Neo4JService) GetMinistryByIDWithDepartments(id int) (models.MinistryWithDepartments, error) {
 	return s.Repo.GetMinistryByIDWithDepartments(id)
 }
+
+func (s *Neo4JService) SeedDummyData() error {
+	return s.Repo.SeedDummyData()
+}

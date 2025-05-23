@@ -42,3 +42,11 @@ func (h *Neo4JHandler) GetMinistryByIDWithDepartments(w http.ResponseWriter, r *
 	}
 	respondWithJSON(w, http.StatusOK, ministries)
 }
+func (h *Neo4JHandler) SeedDummyData(w http.ResponseWriter, r *http.Request) {
+	err := h.Service.SeedDummyData()
+	if err != nil {
+		respondWithError(w, apierrors.ErrInternal)
+		return
+	}
+	respondWithJSON(w, http.StatusOK, map[string]string{"message": "Dummy data seeded successfully"})
+}
