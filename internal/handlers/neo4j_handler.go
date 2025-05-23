@@ -23,7 +23,7 @@ func (h *Neo4JHandler) GetMinistriesWithDepartments(w http.ResponseWriter, r *ht
 		respondWithError(w, apierrors.ErrInternal)
 		return
 	}
-	respondJSON(w, http.StatusOK, ministries)
+	respondWithJSON(w, http.StatusOK, ministries)
 }
 
 func (h *Neo4JHandler) GetMinistryByIDWithDepartments(w http.ResponseWriter, r *http.Request) {
@@ -40,5 +40,5 @@ func (h *Neo4JHandler) GetMinistryByIDWithDepartments(w http.ResponseWriter, r *
 		respondWithError(w, apierrors.ErrInternal)
 		return
 	}
-	respondJSON(w, http.StatusOK, ministries)
+	respondWithJSON(w, http.StatusOK, ministries)
 }
