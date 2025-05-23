@@ -13,7 +13,7 @@ func NewOrganizationService(repo *repository.OrganizationRepository) *Organizati
 	return &OrganizationService{Repo: repo}
 }
 
-func (s *OrganizationService) GetMinistriesWithDepartments() ([]repository.MinistryWithDepartments, error) {
+func (s *OrganizationService) GetMinistriesWithDepartments() ([]models.MinistryWithDepartments, error) {
 	return repository.GetMinistriesWithDepartments(s.Repo)
 }
 

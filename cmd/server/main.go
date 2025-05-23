@@ -1,10 +1,12 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 
+	"go-mysql-backend/config"
 	"go-mysql-backend/internal/db"
 	"go-mysql-backend/internal/handlers"
 	"go-mysql-backend/internal/repository"
@@ -18,23 +20,63 @@ import (
 
 func main() {
 
-	db := db.InitPostgres()
+	dbType := config.LoadType()
+	if dbType == "postgres" {
 
-	orgRepo := repository.NewOrganizationRepository(db)
-	orgService := service.NewOrganizationService(orgRepo)
-	orgHandler := handlers.NewOrganizationHandler(orgService)
+		cfg := config.LoadConfig()
+		if cfg.DatabaseURL == "" {
+			log.Fatal("DATABASE_URL not provided")
+		}
 
-	router := mux.NewRouter()
-	routes.SetupOrgRoutes(router, orgHandler)
+		db, err := sql.Open("postgres", cfg.DatabaseURL)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
 
-	// Wrapping the router with CORS middleware
-	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type"},
-		AllowCredentials: true,
-	}).Handler(router)
+		err = db.Ping()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	fmt.Println("Server running at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", corsHandler)) // Using corsHandler
+		fmt.Println("✅ Successfully connected to PostgreSQL!")
+
+		orgRepo := repository.NewOrganizationRepository(db)
+		orgService := service.NewOrganizationService(orgRepo)
+		orgHandler := handlers.NewOrganizationHandler(orgService)
+
+		router := mux.NewRouter()
+		routes.SetupOrgRoutes(router, orgHandler)
+
+		// Wrapping the router with CORS middleware
+		corsHandler := cors.New(cors.Options{
+			AllowedOrigins:   []string{"http://localhost:5173"},
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Content-Type"},
+			AllowCredentials: true,
+		}).Handler(router)
+
+		fmt.Println("Server running at http://localhost:8080")
+		log.Fatal(http.ListenAndServe(":8080", corsHandler)) // Using corsHandler
+
+	} else if dbType == "neo4j" {
+
+		neo4jDriver, err := db.InitNeo4j()
+		if err != nil {
+			log.Fatal("Failed to connect to Neo4j:", err)
+		}
+		neoRepo := repository.NewNeo4jRepository(neo4jDriver)
+		neoService := service.NewNeo4JService(neoRepo)
+		neoHandler := handlers.NewNeo4JHandler(neoService)
+		router := mux.NewRouter()
+		routes.SetupNeo4JRoutes(router, neoHandler)
+		corsHandler := cors.New(cors.Options{
+			AllowedOrigins:   []string{"http://localhost:5173"},
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Content-Type"},
+			AllowCredentials: true,
+		}).Handler(router)
+		fmt.Println("Server running at http://localhost:8080")
+		log.Fatal(http.ListenAndServe(":8080", corsHandler)) // Using corsHandler
+	}
 }

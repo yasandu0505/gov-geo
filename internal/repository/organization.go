@@ -15,12 +15,7 @@ func NewOrganizationRepository(db *sql.DB) *OrganizationRepository {
 	return &OrganizationRepository{DB: db}
 }
 
-type MinistryWithDepartments struct {
-	models.Ministry
-	Departments []models.Department
-}
-
-func GetMinistriesWithDepartments(r *OrganizationRepository) ([]MinistryWithDepartments, error) {
+func GetMinistriesWithDepartments(r *OrganizationRepository) ([]models.MinistryWithDepartments, error) {
 	rows, err := r.DB.Query(`
         SELECT 
             m.id, m.name, m.google_map_script,
@@ -34,7 +29,7 @@ func GetMinistriesWithDepartments(r *OrganizationRepository) ([]MinistryWithDepa
 	}
 	defer rows.Close()
 
-	ministriesMap := make(map[int]*MinistryWithDepartments)
+	ministriesMap := make(map[int]*models.MinistryWithDepartments)
 
 	for rows.Next() {
 		var mID int
@@ -54,7 +49,7 @@ func GetMinistriesWithDepartments(r *OrganizationRepository) ([]MinistryWithDepa
 		}
 
 		if _, exists := ministriesMap[mID]; !exists {
-			ministriesMap[mID] = &MinistryWithDepartments{
+			ministriesMap[mID] = &models.MinistryWithDepartments{
 				Ministry: models.Ministry{
 					ID:                mID,
 					Name:              mName,
@@ -74,7 +69,7 @@ func GetMinistriesWithDepartments(r *OrganizationRepository) ([]MinistryWithDepa
 		}
 	}
 
-	var ministries []MinistryWithDepartments
+	var ministries []models.MinistryWithDepartments
 	for _, m := range ministriesMap {
 		ministries = append(ministries, *m)
 	}

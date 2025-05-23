@@ -9,7 +9,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-func InitNeo4j() {
+func InitNeo4j() (neo4j.DriverWithContext, error) {
 	ctx := context.Background()
 
 	err := godotenv.Load()
@@ -24,11 +24,16 @@ func InitNeo4j() {
 	driver, err := neo4j.NewDriverWithContext(
 		dbUri,
 		neo4j.BasicAuth(dbUser, dbPassword, ""))
-	defer driver.Close(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	err = driver.VerifyConnectivity(ctx)
 	if err != nil {
-		panic(err)
+		driver.Close(ctx)
+		return nil, err
 	}
+
 	log.Println("✅ Connected to Neo4j")
+	return driver, nil
 }

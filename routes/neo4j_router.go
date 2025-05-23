@@ -1,0 +1,12 @@
+package routes
+
+import (
+	"go-mysql-backend/internal/handlers"
+
+	"github.com/gorilla/mux"
+)
+
+func SetupNeo4JRoutes(router *mux.Router, Neo4JHandler *handlers.Neo4JHandler) {
+	router.HandleFunc("/ministries", Neo4JHandler.GetMinistriesWithDepartments).Methods("GET")
+
+}
