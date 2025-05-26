@@ -102,7 +102,7 @@ func (r *OrganizationRepository) GetMinistriesWithDepartmentsPaginated(limit, of
 		var dName, dMap sql.NullString
 		var dMinistryID sql.NullInt64
 
-		if err := rows.Scan(&mID, &mName, &mMap, &dID, &dName, &dMinistryID, &dMap); err != nil {
+		if err := rows.Scan(&mID, &mName, &mMap, &dID, &dName, &dMap, &dMinistryID); err != nil {
 			return nil, err
 		}
 
