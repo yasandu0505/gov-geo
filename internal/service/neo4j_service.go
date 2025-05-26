@@ -6,10 +6,10 @@ import (
 )
 
 type Neo4JService struct {
-	Repo *repository.Neo4jRepository
+	Repo repository.Neo4jRepo // Use the interface here!
 }
 
-func NewNeo4JService(repo *repository.Neo4jRepository) *Neo4JService {
+func NewNeo4JService(repo repository.Neo4jRepo) *Neo4JService {
 	return &Neo4JService{Repo: repo}
 }
 
