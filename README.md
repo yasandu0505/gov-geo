@@ -62,17 +62,19 @@ Create a `.env` file in the root directory with the following variables:
 
 ```env
 # PostgreSQL Configuration
-POSTGRES_USER=your_username
-POSTGRES_PASSWORD=your_password
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_DB=gov_geo
+DATABASE_URL=your_connection_string
 
 # Neo4j Configuration
 NEO4J_URI=bolt://localhost:7687
 NEO4J_USERNAME=neo4j
 NEO4J_PASSWORD=your_password
+
+# Database type (to switch in between postgres and neo4j)
+
+DATABASE_TYPE=either neo4j or postgres (mind the spellings)
+
 ```
+
 
 ### 4. Install dependencies
 
