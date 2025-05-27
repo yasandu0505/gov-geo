@@ -15,7 +15,7 @@ func NewOrganizationRepository(db *sql.DB) *OrganizationRepository {
 	return &OrganizationRepository{DB: db}
 }
 
-func GetMinistriesWithDepartments(r *OrganizationRepository) ([]models.MinistryWithDepartments, error) {
+func (r *OrganizationRepository) GetMinistriesWithDepartments() ([]models.MinistryWithDepartments, error) {
 	rows, err := r.DB.Query(`
         SELECT 
             m.id, m.name, m.google_map_script,

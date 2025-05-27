@@ -6,15 +6,15 @@ import (
 )
 
 type OrganizationService struct {
-	Repo *repository.OrganizationRepository
+	Repo repository.PostgresRepo
 }
 
-func NewOrganizationService(repo *repository.OrganizationRepository) *OrganizationService {
+func NewOrganizationService(repo repository.PostgresRepo) *OrganizationService {
 	return &OrganizationService{Repo: repo}
 }
 
 func (s *OrganizationService) GetMinistriesWithDepartments() ([]models.MinistryWithDepartments, error) {
-	return repository.GetMinistriesWithDepartments(s.Repo)
+	return s.Repo.GetMinistriesWithDepartments()
 }
 
 func (s *OrganizationService) GetMinistriesWithDepartmentsPaginated(limit, offset int) ([]models.MinistryWithDepartments, error) {
