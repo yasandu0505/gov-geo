@@ -36,22 +36,23 @@ func (h *OrganizationHandler) GetMinistriesWithDepartmentsPaginated(w http.Respo
 
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
-		limit = 10 // default
+		respondWithError(w, apierrors.ErrInvalidInput)
+		return
 	}
 
 	offset, err := strconv.Atoi(offsetStr)
 	if err != nil || offset < 0 {
-		offset = 0
+		respondWithError(w, apierrors.ErrInvalidInput)
+		return
 	}
 
 	ministries, err := h.Service.GetMinistriesWithDepartmentsPaginated(limit, offset)
 	if err != nil {
-		http.Error(w, "Error fetching ministries", http.StatusInternalServerError)
+		respondWithError(w, apierrors.ErrInternal)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(ministries)
+	respondWithJSON(w, http.StatusOK, ministries)
 }
 
 func (h *OrganizationHandler) CreateMinistry(w http.ResponseWriter, r *http.Request) {
@@ -60,9 +61,10 @@ func (h *OrganizationHandler) CreateMinistry(w http.ResponseWriter, r *http.Requ
 		respondWithError(w, apierrors.ErrInvalidInput)
 		return
 	}
+	defer r.Body.Close()
 
-	if ministry.Name == "" {
-		respondWithError(w, apierrors.ErrMissingField)
+	if err := validateMinistry(ministry); err != nil {
+		respondWithError(w, err)
 		return
 	}
 
@@ -90,12 +92,13 @@ func (h *OrganizationHandler) GetAllDepartments(w http.ResponseWriter, r *http.R
 func (h *OrganizationHandler) CreateDepartment(w http.ResponseWriter, r *http.Request) {
 	var dept models.Department
 	if err := json.NewDecoder(r.Body).Decode(&dept); err != nil {
-		respondWithError(w, apierrors.ErrDepartmentNotFound)
+		respondWithError(w, apierrors.ErrInvalidInput)
 		return
 	}
+	defer r.Body.Close()
 
-	if dept.Name == "" || dept.MinistryID == 0 {
-		respondWithError(w, apierrors.ErrMissingField)
+	if err := validateDepartment(dept); err != nil {
+		respondWithError(w, err)
 		return
 	}
 
@@ -112,16 +115,13 @@ func (h *OrganizationHandler) CreateDepartment(w http.ResponseWriter, r *http.Re
 }
 
 func (h *OrganizationHandler) GetMinistryByID(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	idStr := vars["id"]
-
-	ministryID, err := strconv.Atoi(idStr)
+	id, err := getIDFromRequest(r)
 	if err != nil {
 		respondWithError(w, apierrors.ErrInvalidInput)
 		return
 	}
 
-	ministry, err := h.Service.GetMinistryByID(ministryID)
+	ministry, err := h.Service.GetMinistryByID(id)
 	if err != nil {
 		respondWithError(w, apierrors.ErrMinistryNotFound)
 		return
@@ -135,16 +135,13 @@ func (h *OrganizationHandler) GetMinistryByID(w http.ResponseWriter, r *http.Req
 }
 
 func (h *OrganizationHandler) GetMinistryByIDWithDepartments(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	idStr := vars["id"]
-
-	ministryID, err := strconv.Atoi(idStr)
+	id, err := getIDFromRequest(r)
 	if err != nil {
 		respondWithError(w, apierrors.ErrInvalidInput)
 		return
 	}
 
-	ministry, err := h.Service.GetMinistryByIDWithDepartments(ministryID)
+	ministry, err := h.Service.GetMinistryByIDWithDepartments(id)
 	if err != nil {
 		respondWithError(w, apierrors.ErrMinistryNotFound)
 		return
@@ -158,10 +155,7 @@ func (h *OrganizationHandler) GetMinistryByIDWithDepartments(w http.ResponseWrit
 }
 
 func (h *OrganizationHandler) GetDepartmentByID(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	idStr := vars["id"]
-
-	id, err := strconv.Atoi(idStr)
+	id, err := getIDFromRequest(r)
 	if err != nil {
 		respondWithError(w, apierrors.ErrInvalidInput)
 		return
@@ -169,7 +163,7 @@ func (h *OrganizationHandler) GetDepartmentByID(w http.ResponseWriter, r *http.R
 
 	dept, err := h.Service.GetDepartmentByID(id)
 	if err != nil {
-		respondWithError(w, apierrors.ErrInternal)
+		respondWithError(w, apierrors.ErrDepartmentNotFound)
 		return
 	}
 	if dept == nil {
@@ -178,4 +172,27 @@ func (h *OrganizationHandler) GetDepartmentByID(w http.ResponseWriter, r *http.R
 	}
 
 	respondWithJSON(w, http.StatusOK, dept)
+}
+
+// Helper functions
+func getIDFromRequest(r *http.Request) (int, error) {
+	vars := mux.Vars(r)
+	return strconv.Atoi(vars["id"])
+}
+
+func validateMinistry(ministry models.Ministry) error {
+	if ministry.Name == "" {
+		return apierrors.ErrMissingField
+	}
+	return nil
+}
+
+func validateDepartment(dept models.Department) error {
+	if dept.Name == "" {
+		return apierrors.ErrMissingField
+	}
+	if dept.MinistryID == 0 {
+		return apierrors.ErrMissingField
+	}
+	return nil
 }
