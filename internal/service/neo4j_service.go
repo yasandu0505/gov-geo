@@ -6,7 +6,7 @@ import (
 )
 
 type Neo4JService struct {
-	Repo repository.Neo4jRepo // Use the interface here!
+	Repo repository.Neo4jRepo
 }
 
 func NewNeo4JService(repo repository.Neo4jRepo) *Neo4JService {
