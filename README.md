@@ -114,7 +114,7 @@ gov-geo/
 
    # Neo4j Configuration
    NEO4J_URI=bolt://localhost:7687  # Default Neo4j URI
-   NEO4J_USERNAME=neo4j            # Default username
+   NEO4J_USER=neo4j            # Default username
    NEO4J_PASSWORD=your_password    # Your Neo4j password
 
    # CORS Configuration (for development)
@@ -145,18 +145,18 @@ gov-geo/
 
 | Method | Endpoint | Description | Request Body Example |
 |--------|----------|-------------|---------------------|
-| GET | `/api/v1/ministries` | Get all ministries with departments | - |
-| GET | `/api/v1/ministries/paginated?limit=10&offset=0` | Get paginated ministries | - |
-| GET | `/api/v1/ministries/{id}` | Get ministry by ID | - |
-| POST | `/api/v1/ministries` | Create new ministry | `{"name": "Ministry of Education", "google_map_script": "<script>...</script>"}` |
+| GET | `/ministries` | Get all ministries with departments | - |
+| GET | `/ministries/paginated?limit=10&offset=0` | Get paginated ministries | - |
+| GET | `/ministries/{id}` | Get ministry by ID | - |
+| POST | `/ministries` | Create new ministry | `{"name": "Ministry of Education", "google_map_script": "<script>...</script>"}` |
 
 ### Departments
 
 | Method | Endpoint | Description | Request Body Example |
 |--------|----------|-------------|---------------------|
-| GET | `/api/v1/departments` | Get all departments | - |
-| GET | `/api/v1/departments/{id}` | Get department by ID | - |
-| POST | `/api/v1/departments` | Create new department | `{"name": "Primary Education", "ministry_id": 1, "google_map_script": "<script>...</script>"}` |
+| GET | `/departments` | Get all departments | - |
+| GET | `/departments/{id}` | Get department by ID | - |
+| POST | `/departments` | Create new department | `{"name": "Primary Education", "ministry_id": 1, "google_map_script": "<script>...</script>"}` |
 
 ## 🧪 Testing
 
